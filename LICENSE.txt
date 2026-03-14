@@ -1,4 +1,4 @@
-Copyright (c) 2024 Bernardo Manfriani
+Copyright (c) 2026 Bernardo Manfriani
 All rights reserved.
 
 ACADEMIC AND RESEARCH USE LICENSE
