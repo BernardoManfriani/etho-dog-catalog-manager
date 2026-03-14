@@ -17,13 +17,15 @@ class PdfGenerator:
     MARGIN = 15 * mm
     GAP = 5 * mm
     PHOTO_HEIGHT = 45 * mm
-    TEXT_LINE_HEIGHT = 5 * mm
-    CARD_TEXT_LINES = 3
+    TEXT_LINE_HEIGHT = 4.5 * mm
+    CARD_TEXT_LINES = 5          # name + location/sex + tag/color + year/dead + notes
     CARD_PADDING = 4 * mm
     BORDER_COLOR = colors.HexColor("#cccccc")
     PLACEHOLDER_COLOR = colors.HexColor("#eeeeee")
     TEXT_COLOR = colors.HexColor("#222222")
     META_COLOR = colors.HexColor("#666666")
+    DEAD_COLOR = colors.HexColor("#dc3545")
+    GREEN_BG = colors.HexColor("#d4edda")
 
     def __init__(self, output_path: str):
         self.output_path = output_path
@@ -101,11 +103,20 @@ class PdfGenerator:
         card_h: float,
         project_root: Optional[str],
     ) -> None:
-        # Bordo card
-        c.setStrokeColor(self.BORDER_COLOR)
-        c.setLineWidth(0.5)
-        c.setFillColor(colors.white)
+        # Card background + border (green if location=E, red border if dead)
+        bg = self.GREEN_BG if dog.location == "E" else colors.white
+        border_col = self.DEAD_COLOR if dog.dead else self.BORDER_COLOR
+        border_w = 1.5 if dog.dead else 0.5
+        c.setStrokeColor(border_col)
+        c.setLineWidth(border_w)
+        c.setFillColor(bg)
         c.roundRect(x, y, card_w, card_h, 3 * mm, fill=1, stroke=1)
+
+        # Diagonal line for dead dogs
+        if dog.dead:
+            c.setStrokeColor(self.DEAD_COLOR)
+            c.setLineWidth(1.5)
+            c.line(x, y + card_h, x + card_w, y)
 
         # Area foto
         photo_x = x + self.CARD_PADDING
@@ -152,35 +163,49 @@ class PdfGenerator:
                 "No photo available",
             )
 
-        # Testo sotto la foto
-        text_y = photo_y - self.TEXT_LINE_HEIGHT * 0.5
+        # Text below photo
+        text_y = photo_y - self.TEXT_LINE_HEIGHT * 0.6
 
-        # Nome (bold)
-        c.setFillColor(self.TEXT_COLOR)
-        c.setFont("Helvetica-Bold", 9)
-        name_display = dog.format_display_name()
-        if len(name_display) > 40:
-            name_display = name_display[:40] + "…"
+        # Line 1: Name bold
+        c.setFillColor(self.DEAD_COLOR if dog.dead else self.TEXT_COLOR)
+        c.setFont("Helvetica-Bold", 8)
+        name_display = dog.name
+        if len(name_display) > 22:
+            name_display = name_display[:22] + "…"
         c.drawString(photo_x, text_y, name_display)
         text_y -= self.TEXT_LINE_HEIGHT
 
-        # Sesso e luogo
+        # Line 2: Sex · Location
         c.setFillColor(self.META_COLOR)
         c.setFont("Helvetica", 7)
-        meta_parts = []
-        if dog.sex and dog.sex != "Unknown":
-            meta_parts.append(dog.display_sex())
-        if dog.location:
-            meta_parts.append(dog.location[:20])
-        meta_str = " · ".join(meta_parts) if meta_parts else "—"
-        c.drawString(photo_x, text_y, meta_str[:38])
+        sex_str = dog.sex if dog.sex != "Unknown" else "?"
+        loc_str = dog.location or "—"
+        c.drawString(photo_x, text_y, f"{sex_str} · {loc_str[:18]}")
         text_y -= self.TEXT_LINE_HEIGHT
 
-        # Note brevi (opzionale)
+        # Line 3: Tag & color · Year
+        tag_str = f"Tag {dog.tag_number}&{dog.color}" if dog.tag_number and dog.color else (
+            f"Tag {dog.tag_number}" if dog.tag_number else "")
+        year_str = dog.year or ""
+        line3 = "  ".join(filter(None, [tag_str, year_str]))
+        if line3:
+            c.drawString(photo_x, text_y, line3[:35])
+        text_y -= self.TEXT_LINE_HEIGHT
+
+        # Line 4: Coat color · Dead status
+        coat_str = dog.coat_color or ""
+        dead_str = "✖ DEAD" if dog.dead else ""
+        line4 = "  ".join(filter(None, [coat_str, dead_str]))
+        if line4:
+            c.setFillColor(self.DEAD_COLOR if dog.dead else self.META_COLOR)
+            c.drawString(photo_x, text_y, line4[:35])
+        text_y -= self.TEXT_LINE_HEIGHT
+
+        # Line 5: Notes
         if dog.notes:
             c.setFont("Helvetica-Oblique", 6)
             c.setFillColor(self.META_COLOR)
-            notes_display = dog.notes[:45] + "…" if len(dog.notes) > 45 else dog.notes
+            notes_display = dog.notes[:40] + "…" if len(dog.notes) > 40 else dog.notes
             c.drawString(photo_x, text_y, notes_display)
 
     def _get_card_dimensions(self, page_w: float, page_h: float) -> tuple[float, float]:

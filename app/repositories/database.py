@@ -52,12 +52,13 @@ class Database:
         self._migrate_columns()
 
     def _migrate_columns(self) -> None:
-        """Aggiunge le colonne mancanti ai DB esistenti (idempotente)."""
+        """Adds missing columns to existing DBs (idempotent)."""
         new_cols = [
             ("tag_number", "INTEGER"),
             ("color", "TEXT DEFAULT ''"),
             ("year", "TEXT DEFAULT ''"),
             ("dead", "BOOLEAN DEFAULT 0"),
+            ("coat_color", "TEXT DEFAULT ''"),
         ]
         conn = self.get_connection()
         try:

@@ -39,7 +39,7 @@ with col3:
     if st.button("📷 Update photo", width='stretch', type="primary"):
         st.switch_page("pages/04_Quick_Photo_Update.py")
 
-col4, col5 = st.columns(2)
+col4, col5, col6 = st.columns(3)
 with col4:
     if st.button("📄 Export PDF", width='stretch'):
         st.switch_page("pages/05_Export.py")
@@ -47,6 +47,10 @@ with col4:
 with col5:
     if st.button("🗃️ Archived", width='stretch'):
         st.switch_page("pages/06_Archived.py")
+
+with col6:
+    if st.button("📥 Import (PDF/CSV)", width='stretch', type="primary"):
+        st.switch_page("pages/07_Import.py")
 
 if stats.get("needs_photo_update", 0) > 0:
     st.warning(

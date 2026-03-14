@@ -4,7 +4,10 @@ from typing import Optional
 
 
 LOCATION_OPTIONS = ["TH", "IF", "DR", "JS", "BB", "WC", "E", "k17", "k18"]
-COLOR_OPTIONS = ["Y", "B", "O", "P"]
+COLOR_OPTIONS = ["Y", "B", "O", "P"]  # tag/collar color codes
+
+# Coat-color sub-catalogs (fur/pelage classification)
+COAT_OPTIONS = ["White", "Light tan", "Dark brown", "Brindle", "Black"]
 
 
 @dataclass
@@ -19,25 +22,24 @@ class Dog:
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     manual_order: Optional[int] = None
-    # Campi estesi
+    # Extended fields
     tag_number: Optional[int] = None
-    color: Optional[str] = None
+    color: Optional[str] = None       # tag/collar color: Y, B, O, P
     year: Optional[str] = None
     dead: bool = False
+    coat_color: Optional[str] = None  # coat/fur catalog: White, Light tan, Dark brown, Brindle, Black
 
     def is_active(self) -> bool:
         return self.status == "active"
 
     def display_sex(self) -> str:
-        mapping = {"M": "Maschio", "F": "Femmina", "Unknown": "Non specificato"}
+        mapping = {"M": "Male", "F": "Female", "Unknown": "Unknown"}
         return mapping.get(self.sex, self.sex)
 
     def format_display_name(self) -> str:
         """
-        Formato: Nome_location_sex[_tagnumber&color]_year[_(dead)]
-        tag&color vengono inclusi solo se entrambi presenti.
-        year viene incluso se presente.
-        _(dead) viene aggiunto se dead=True.
+        Format: Name_location_sex[_tagnumber&color]_year[_(dead)]
+        tag&color included only when both are present.
         """
         parts = [self.name]
         if self.location:

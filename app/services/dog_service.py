@@ -24,6 +24,7 @@ class DogService:
         color: Optional[str] = None,
         year: Optional[str] = None,
         dead: bool = False,
+        coat_color: Optional[str] = None,
     ) -> Dog:
         name = name.strip()
         if not name:
@@ -43,6 +44,7 @@ class DogService:
             color=color or None,
             year=year or None,
             dead=dead,
+            coat_color=coat_color or None,
         )
         return self.dog_repo.create(dog)
 
@@ -82,6 +84,8 @@ class DogService:
             dog.year = fields["year"] or None
         if "dead" in fields:
             dog.dead = bool(fields["dead"])
+        if "coat_color" in fields:
+            dog.coat_color = fields["coat_color"] or None
 
         return self.dog_repo.update(dog)
 
@@ -106,6 +110,8 @@ class DogService:
         needs_photo_update: Optional[bool] = None,
         status: str = "active",
         order_by: str = "name",
+        tag_number: Optional[int] = None,
+        coat_color: Optional[str] = None,
     ) -> list[Dog]:
         return self.dog_repo.search(
             query=query,
@@ -114,6 +120,8 @@ class DogService:
             needs_photo_update=needs_photo_update,
             status=status,
             order_by=order_by,
+            tag_number=tag_number,
+            coat_color=coat_color,
         )
 
     def get_catalog_page(
@@ -123,6 +131,8 @@ class DogService:
         location: Optional[str] = None,
         needs_photo_update: Optional[bool] = None,
         order_by: str = "name",
+        tag_number: Optional[int] = None,
+        coat_color: Optional[str] = None,
     ) -> list[Dog]:
         return self.dog_repo.search(
             query=query,
@@ -131,6 +141,8 @@ class DogService:
             needs_photo_update=needs_photo_update,
             status="active",
             order_by=order_by,
+            tag_number=tag_number,
+            coat_color=coat_color,
         )
 
     def get_dashboard_stats(self) -> dict:

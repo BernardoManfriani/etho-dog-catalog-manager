@@ -29,6 +29,8 @@ class DogRepository:
         needs_photo_update: Optional[bool] = None,
         status: str = "active",
         order_by: str = "name",
+        tag_number: Optional[int] = None,
+        coat_color: Optional[str] = None,
     ) -> list[Dog]:
         clauses = ["status = ?"]
         params: list = [status]
@@ -37,17 +39,25 @@ class DogRepository:
             clauses.append("(name LIKE ? OR location LIKE ? OR notes LIKE ?)")
             params += [f"%{query}%", f"%{query}%", f"%{query}%"]
 
-        if sex and sex != "Tutti":
+        if sex and sex not in ("All", "Tutti"):
             clauses.append("sex = ?")
             params.append(sex)
 
-        if location and location != "Tutti":
+        if location and location not in ("All", "Tutti"):
             clauses.append("location = ?")
             params.append(location)
 
         if needs_photo_update is not None:
             clauses.append("needs_photo_update = ?")
             params.append(1 if needs_photo_update else 0)
+
+        if tag_number is not None:
+            clauses.append("tag_number = ?")
+            params.append(tag_number)
+
+        if coat_color:
+            clauses.append("coat_color = ?")
+            params.append(coat_color)
 
         valid_orders = {"name", "created_at", "updated_at", "manual_order"}
         order_col = order_by if order_by in valid_orders else "name"
@@ -64,8 +74,8 @@ class DogRepository:
             cursor = conn.execute(
                 """INSERT INTO dogs (name, sex, location, notes, needs_photo_update,
                    status, created_at, updated_at, manual_order,
-                   tag_number, color, year, dead)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   tag_number, color, year, dead, coat_color)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     dog.name, dog.sex, dog.location, dog.notes,
                     1 if dog.needs_photo_update else 0,
@@ -74,6 +84,7 @@ class DogRepository:
                     dog.color or "",
                     dog.year or "",
                     1 if dog.dead else 0,
+                    dog.coat_color or "",
                 ],
             )
             dog.id = cursor.lastrowid
@@ -87,7 +98,7 @@ class DogRepository:
             conn.execute(
                 """UPDATE dogs SET name=?, sex=?, location=?, notes=?,
                    needs_photo_update=?, status=?, updated_at=?, manual_order=?,
-                   tag_number=?, color=?, year=?, dead=?
+                   tag_number=?, color=?, year=?, dead=?, coat_color=?
                    WHERE id=?""",
                 [
                     dog.name, dog.sex, dog.location, dog.notes,
@@ -97,6 +108,7 @@ class DogRepository:
                     dog.color or "",
                     dog.year or "",
                     1 if dog.dead else 0,
+                    dog.coat_color or "",
                     dog.id,
                 ],
             )
@@ -201,4 +213,5 @@ class DogRepository:
             color=_get("color") or None,
             year=_get("year") or None,
             dead=bool(_get("dead", 0)),
+            coat_color=_get("coat_color") or None,
         )

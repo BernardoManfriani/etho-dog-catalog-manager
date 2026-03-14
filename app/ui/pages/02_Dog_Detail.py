@@ -4,7 +4,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 import streamlit as st
 
-from app.models.dog import LOCATION_OPTIONS, COLOR_OPTIONS
+from app.models.dog import LOCATION_OPTIONS, COLOR_OPTIONS, COAT_OPTIONS
 from app.ui.service_locator import get_dog_service, get_photo_service, resolve_photo_path
 from app.ui.components import photo_grid, confirm_action
 
@@ -68,9 +68,10 @@ with right_col:
             st.markdown(f"**Sex:** {dog.sex}")
             st.markdown(f"**Location:** {dog.location or '—'}")
             st.markdown(f"**Year:** {dog.year or '—'}")
+            st.markdown(f"**Coat:** {dog.coat_color or '—'}")
         with col_b:
             st.markdown(f"**Tag:** {dog.tag_number if dog.tag_number is not None else '—'}")
-            st.markdown(f"**Color:** {dog.color or '—'}")
+            st.markdown(f"**Tag color:** {dog.color or '—'}")
             st.markdown(f"**Dead:** {'Yes' if dog.dead else 'No'}")
 
         if dog.notes:
@@ -119,6 +120,10 @@ with right_col:
 
             new_year = st.text_input("Year", value=dog.year or "")
 
+            coat_opts = ["(none)"] + COAT_OPTIONS
+            coat_idx = coat_opts.index(dog.coat_color) if dog.coat_color in COAT_OPTIONS else 0
+            new_coat_choice = st.selectbox("Coat color (sub-catalog)", coat_opts, index=coat_idx)
+
             col1, col2 = st.columns(2)
             with col1:
                 new_tag = st.text_input(
@@ -126,9 +131,9 @@ with right_col:
                     value=str(dog.tag_number) if dog.tag_number is not None else "",
                 )
             with col2:
-                color_opts = ["(nessuno)"] + COLOR_OPTIONS
+                color_opts = ["(none)"] + COLOR_OPTIONS
                 color_idx = color_opts.index(dog.color) if dog.color in COLOR_OPTIONS else 0
-                new_color_choice = st.selectbox("Color", color_opts, index=color_idx)
+                new_color_choice = st.selectbox("Tag color", color_opts, index=color_idx)
 
             new_dead = st.checkbox("Dead", value=dog.dead)
             new_notes = st.text_area("Notes", value=dog.notes)
@@ -142,7 +147,8 @@ with right_col:
                 tag_number = None
                 if new_tag.strip():
                     tag_number = int(new_tag.strip())
-                new_color = new_color_choice if new_color_choice != "(nessuno)" else None
+                new_color = new_color_choice if new_color_choice != "(none)" else None
+                new_coat = new_coat_choice if new_coat_choice != "(none)" else None
                 dog_service.update_dog(
                     dog_id,
                     name=new_name,
@@ -154,6 +160,7 @@ with right_col:
                     color=new_color,
                     year=new_year.strip() or None,
                     dead=new_dead,
+                    coat_color=new_coat,
                 )
                 st.session_state["ss_detail_edit_mode"] = False
                 st.success("Changes saved!")

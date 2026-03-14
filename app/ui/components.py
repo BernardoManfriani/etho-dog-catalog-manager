@@ -1,7 +1,7 @@
 """Componenti Streamlit riusabili condivisi tra le pagine."""
 import base64
 from pathlib import Path
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
 
 import streamlit as st
 
@@ -132,6 +132,11 @@ def filter_sidebar(locations: list[str]) -> dict:
         loc_options = ["All"] + locations
         location = st.selectbox("Location", loc_options, key="ss_filter_location")
 
+        tag_raw = st.text_input("Tag number", placeholder="1–999", key="ss_filter_tag")
+        tag_number: Optional[int] = None
+        if tag_raw.strip().isdigit():
+            tag_number = int(tag_raw.strip())
+
         needs_update = st.checkbox("Needs photo update only", key="ss_filter_needs_update")
 
         order_options = {
@@ -146,6 +151,7 @@ def filter_sidebar(locations: list[str]) -> dict:
         "query": query,
         "sex": sex if sex != "All" else None,
         "location": location if location != "All" else None,
+        "tag_number": tag_number,
         "needs_photo_update": True if needs_update else None,
         "order_by": order_by,
     }

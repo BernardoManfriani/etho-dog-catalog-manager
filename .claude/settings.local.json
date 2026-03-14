@@ -4,7 +4,10 @@
       "Bash(pip list:*)",
       "Bash(mkdir -p app/models app/repositories app/services app/utils app/pdf app/ui/pages scripts tests data/media data/exports)",
       "Bash(touch app/__init__.py app/models/__init__.py app/repositories/__init__.py app/services/__init__.py app/utils/__init__.py app/pdf/__init__.py app/ui/__init__.py scripts/__init__.py tests/__init__.py)",
-      "Bash(.venv/Scripts/python -m pytest tests/ -v)"
+      "Bash(.venv/Scripts/python -m pytest tests/ -v)",
+      "Bash(.venv/Scripts/python.exe -c \":*)",
+      "Bash(.venv/Scripts/python.exe -c \"import app.models.dog; import inspect; print\\(inspect.getfile\\(app.models.dog\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"import app.models.dog; print\\(dir\\(app.models.dog\\)\\)\")"
     ]
   }
 }

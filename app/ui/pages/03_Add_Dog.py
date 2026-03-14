@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from datetime import datetime
 import streamlit as st
 
-from app.models.dog import LOCATION_OPTIONS, COLOR_OPTIONS
+from app.models.dog import LOCATION_OPTIONS, COLOR_OPTIONS, COAT_OPTIONS
 from app.ui.service_locator import get_dog_service, get_photo_service
 
 st.set_page_config(page_title="Add Dog", page_icon="➕", layout="centered")
@@ -13,6 +13,9 @@ st.title("➕ Add new dog")
 
 dog_service = get_dog_service()
 photo_service = get_photo_service()
+
+# Pre-fill coat_color if navigated from a sub-catalog tab
+preset_coat = st.session_state.pop("ss_preset_coat_color", None)
 
 with st.form("add_dog_form", clear_on_submit=True):
 
@@ -23,13 +26,19 @@ with st.form("add_dog_form", clear_on_submit=True):
     year = st.text_input("Year *", value=str(datetime.now().year))
 
     st.divider()
+    st.subheader("Coat Color Catalog")
+    coat_options_with_none = ["(none)"] + COAT_OPTIONS
+    default_coat_idx = coat_options_with_none.index(preset_coat) if preset_coat in coat_options_with_none else 0
+    coat_choice = st.selectbox("Coat color (sub-catalog)", coat_options_with_none, index=default_coat_idx)
+
+    st.divider()
     st.subheader("Optional Fields")
 
     col1, col2 = st.columns(2)
     with col1:
-        tag_input = st.text_input("Tag number (1-999)", placeholder="es. 42")
+        tag_input = st.text_input("Tag number (1-999)", placeholder="e.g. 42")
     with col2:
-        color_choice = st.selectbox("Color", ["(nessuno)"] + COLOR_OPTIONS)
+        color_choice = st.selectbox("Tag color", ["(none)"] + COLOR_OPTIONS)
 
     dead = st.checkbox("Dead")
     notes = st.text_area("Notes", placeholder="Free notes...")
@@ -40,7 +49,6 @@ with st.form("add_dog_form", clear_on_submit=True):
     submitted = st.form_submit_button("💾 Add dog", type="primary")
 
 if submitted:
-    # Validazione tag_number
     tag_number = None
     if tag_input.strip():
         try:
@@ -52,7 +60,8 @@ if submitted:
             st.error("Tag number must be an integer.")
             st.stop()
 
-    color = color_choice if color_choice != "(nessuno)" else None
+    color = color_choice if color_choice != "(none)" else None
+    coat = coat_choice if coat_choice != "(none)" else None
 
     if not year.strip():
         st.error("Year is required.")
@@ -68,6 +77,7 @@ if submitted:
             color=color,
             year=year.strip(),
             dead=dead,
+            coat_color=coat,
         )
 
         if photo_file:
