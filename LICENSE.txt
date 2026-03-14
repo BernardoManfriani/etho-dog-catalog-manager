@@ -1,0 +1,38 @@
+Copyright (c) 2024 Bernardo Manfriani
+All rights reserved.
+
+ACADEMIC AND RESEARCH USE LICENSE
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software solely for academic, scientific, and
+non-commercial research purposes, subject to the following conditions:
+
+1. ATTRIBUTION REQUIRED
+   Any use, distribution, or derivative work — including publications, reports,
+   presentations, or software products — must give appropriate credit to the
+   original author:
+
+       Bernardo Manfriani — Etho Dog Catalog Manager
+       https://github.com/BernardoManfriani/etho-dog-catalog-manager
+
+2. NON-COMMERCIAL USE ONLY
+   The Software may not be used, in whole or in part, for commercial purposes.
+   Commercial purposes include, but are not limited to: selling the Software or
+   derivative works, incorporating the Software into a commercial product or
+   service, or using the Software to generate revenue.
+
+3. SHARE ALIKE
+   Any derivative work or modification distributed publicly must be released
+   under these same license terms.
+
+4. NO WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For any use outside the scope of this license (commercial use, licensing
+inquiries, or other permissions), contact the author directly via GitHub.

@@ -2,6 +2,8 @@
 
 A local app for managing a dog catalog — photos, locations, coat colors, PDF export and more.
 
+> Academic and research use only — see [LICENSE.txt](LICENSE.txt)
+
 > **Developer?** Jump to [Developer Setup](#developer-setup) at the bottom.
 
 ---
