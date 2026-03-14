@@ -1,197 +1,244 @@
 # Etho Dog Catalog Manager
 
-Applicazione locale per la gestione di un catalogo cani. Sostituisce il workflow manuale su PDF con un database locale + interfaccia web su browser.
+A local-first web app for managing a dog catalog. Built with Python and Streamlit — runs entirely on your machine, no internet or cloud required.
 
-## Prerequisiti
+Dogs are organized by coat color (White, Light tan, Dark brown, Brindle, Black), each with photos, location, sex, tag number, year, and status. You can generate PDF catalogs, import dogs from existing cheat-sheet PDFs, export/import CSV, and create full backups.
 
-- Python 3.11 o superiore
+---
+
+## Requirements
+
+- Python 3.11 or higher
 - pip
 
-## Installazione
+---
+
+## Installation
 
 ```bash
-# Clona o scarica il progetto
+# 1. Clone the repository
+git clone https://github.com/your-username/etho-dog-catalog-manager.git
 cd etho-dog-catalog-manager
 
-# Installa le dipendenze
+# 2. Create a virtual environment (recommended)
+python -m venv .venv
+
+# Activate it:
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-## Avvio
+---
+
+## Running the app
 
 ```bash
 python main.py
 ```
 
-Oppure direttamente con Streamlit:
+Or directly with Streamlit:
 
 ```bash
 streamlit run app/ui/Home.py
 ```
 
-L'app sarà disponibile su: **http://localhost:8501**
+Then open your browser at: **http://localhost:8501**
 
-## Primo avvio con dati demo
+---
 
-Per popolare il database con 20 cani di esempio:
+## Load demo data (optional)
+
+To pre-populate the database with 20 example dogs:
 
 ```bash
 python scripts/seed.py
 ```
 
-## Struttura cartelle
+---
+
+## Pages overview
+
+| Page | What it does |
+|------|-------------|
+| **Home** | Dashboard with stats and quick action buttons |
+| **Catalog** | Browse dogs in 5 color sub-catalogs (White, Light tan, Dark brown, Brindle, Black). Search, filter, bulk delete. |
+| **Dog Detail** | View/edit a dog's info, manage photos, archive or permanently delete |
+| **Add Dog** | Add a new dog with all fields and an optional photo |
+| **Quick Photo Update** | Fast two-step screen: search a dog → upload a new photo |
+| **Export** | Generate PDF catalog, export/import CSV, create a zip backup |
+| **Archived** | View archived dogs, restore or permanently delete, bulk delete |
+| **Import** | Import dogs from a cheat-sheet PDF or a CSV file |
+
+---
+
+## How to use
+
+### Add a dog
+1. Click **➕ Add dog** from the dashboard or the sidebar
+2. Fill in the name (required), location, sex, year, coat color
+3. Optionally add tag number, tag color, notes, and a photo
+4. Click **💾 Add dog**
+
+### Search and filter
+1. Open **📋 Catalog** from the sidebar
+2. Use the sidebar filters: search by name, sex, location, tag number, needs-photo-update
+3. Switch between color sub-catalog tabs to browse by coat color
+
+### Update a dog's photo
+1. Click **📷 Update photo** from the dashboard
+2. Search the dog by name and click **Select**
+3. Upload the new photo
+
+### Generate a PDF catalog
+1. Open **📄 Export**
+2. Set a title (optional) and click **🖨️ Generate PDF**
+3. Download the file — cards show name, location, sex, tag, coat color, year, and notes
+
+### Import dogs from a PDF
+1. Click **📥 Import** from the dashboard (or open it from the sidebar)
+2. Upload a cheat-sheet PDF with the format: `Name ♂/♀ Location` per dog
+3. Review the extracted list, adjust if needed, assign a coat color, then click **Import**
+
+### Import dogs from CSV
+Go to **Import → CSV tab**. Download the template, fill it in, and upload. Required column: `name`. Optional: `sex`, `location`, `notes`, `tag_number`, `color`, `year`, `dead`, `coat_color`.
+
+### Bulk delete
+- In the **Catalog**: enable **"Select mode"** in the sidebar → pick dogs from the multiselect list → **Delete selected** or **Delete ALL shown**
+- In **Archived**: use per-row checkboxes or **Delete ALL archived**
+
+### Backup and restore
+1. Open **Export → Backup section** → click **💾 Create backup**
+2. Download the `.zip` file — it contains the database and all photos
+
+To restore: extract the zip, copy `catalog.db` into `data/` and the images into `data/media/`.
+
+---
+
+## Where data is stored
+
+| Data | Path |
+|------|------|
+| Database | `data/catalog.db` |
+| Photos | `data/media/` |
+| Exported PDFs | `data/exports/` |
+| Backup zips | `data/exports/` |
+
+> **Note:** `data/` is listed in `.gitignore` — your dogs, photos, and database will never be accidentally pushed to GitHub.
+
+Photos are automatically resized to max 1200px and saved as JPEG (quality 85) with a unique filename.
+
+---
+
+## Dog fields
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| Name | Yes | |
+| Sex | Yes | M / F |
+| Location | Yes | TH, IF, DR, JS, BB, WC, E, k17, k18 |
+| Year | Yes | |
+| Coat color | No | White / Light tan / Dark brown / Brindle / Black — determines which sub-catalog the dog appears in |
+| Tag number | No | 1–999 |
+| Tag color | No | Y / B / O / P |
+| Notes | No | Free text |
+| Dead | No | Shows red border + diagonal line in catalog and PDF |
+
+The display name shown in cards and PDFs is auto-formatted as:
+```
+Name_Location_Sex_TagNumber&TagColor_Year_(dead)
+```
+
+---
+
+## Running tests
+
+```bash
+pytest tests/
+```
+
+For verbose output:
+
+```bash
+pytest tests/ -v
+```
+
+---
+
+## Project structure
 
 ```
 etho-dog-catalog-manager/
 ├── app/
-│   ├── models/          # Dataclass Dog, DogPhoto
-│   ├── repositories/    # Accesso SQLite (DogRepository, PhotoRepository)
+│   ├── models/          # Dog, DogPhoto dataclasses
+│   ├── repositories/    # SQLite access (DogRepository, PhotoRepository)
 │   ├── services/        # Business logic (DogService, PhotoService, ExportService)
-│   ├── utils/           # ImageUtils, BackupUtils, CsvUtils
+│   ├── utils/           # ImageUtils, BackupUtils, CsvUtils, PdfImportUtils
 │   ├── pdf/             # PdfGenerator (ReportLab)
-│   └── ui/              # Pagine Streamlit
+│   └── ui/
 │       ├── Home.py      # Dashboard
+│       ├── components.py
+│       ├── service_locator.py
 │       └── pages/
 │           ├── 01_Catalog.py
 │           ├── 02_Dog_Detail.py
 │           ├── 03_Add_Dog.py
 │           ├── 04_Quick_Photo_Update.py
 │           ├── 05_Export.py
-│           └── 06_Archived.py
-├── data/
-│   ├── catalog.db       # Database SQLite
-│   ├── media/           # Foto dei cani
-│   └── exports/         # PDF e backup generati
+│           ├── 06_Archived.py
+│           └── 07_Import.py
+├── data/                # Auto-created at first launch (gitignored)
+│   ├── catalog.db
+│   ├── media/
+│   └── exports/
 ├── scripts/
-│   └── seed.py          # Dati demo
-├── tests/               # Test pytest
-├── main.py              # Entry point
+│   └── seed.py
+├── tests/
+├── main.py
 └── requirements.txt
 ```
 
-## Dove sono salvati i dati
+---
 
-| Dato | Percorso |
-|------|----------|
-| Database | `data/catalog.db` |
-| Foto | `data/media/` |
-| PDF esportati | `data/exports/` |
-| Backup zip | `data/exports/` |
+## Architecture
 
-Le foto sono salvate come JPEG (max 1200px, qualità 85) con nomi univoci generati automaticamente.
-
-## Come usare l'app
-
-### Aggiungere un cane
-1. Click su **➕ Aggiungi cane** dalla dashboard o dal menu laterale
-2. Inserisci nome (obbligatorio), sesso, luogo, note
-3. Carica una foto opzionale
-4. Click **Salva**
-
-### Cercare un cane
-1. Apri **📋 Catalogo** dal menu
-2. Usa la barra di ricerca in alto o i filtri nella sidebar (sesso, luogo, foto da aggiornare)
-
-### Aggiornare la foto di un cane
-1. Click su **📷 Aggiorna foto** dalla dashboard
-2. Cerca il cane per nome
-3. Clicca **Seleziona**
-4. Carica la nuova foto
-5. Click **Carica**
-
-### Generare il PDF del catalogo
-1. Apri **📄 Esporta** dal menu
-2. Inserisci il titolo del PDF (opzionale)
-3. Click **🖨️ Genera PDF**
-4. Scarica il file con il pulsante che compare
-
-## Come fare un backup
-
-1. Apri **📄 Esporta**
-2. Nella sezione **Backup Database**, click **💾 Crea backup**
-3. Scarica il file `.zip` — contiene il database + tutte le foto
-
-Per ripristinare: estrai il file zip e copia `catalog.db` in `data/` e le immagini in `data/media/`.
-
-## Esportare/importare CSV
-
-**Esporta:** Apri Esporta → click **Esporta CSV** → scarica.
-
-**Importa:** Il CSV deve avere almeno la colonna `name`. Colonne opzionali: `sex`, `location`, `notes`.
-
-Esempio CSV:
-```csv
-name,sex,location,notes
-Rex,M,Rifugio A,Pastore tedesco
-Luna,F,Rifugio B,
+```
+UI (Streamlit pages)
+    ↓
+Services (DogService, PhotoService, ExportService)
+    ↓
+Repositories (DogRepository, PhotoRepository)
+    ↓
+SQLite — data/catalog.db
 ```
 
-## Eseguire i test
+Each layer only depends on the one below it. UI never touches the database directly.
 
-```bash
-pytest tests/
-```
+---
 
-Per vedere l'output dettagliato:
+## Known limitations
 
-```bash
-pytest tests/ -v
-```
+- No authentication — designed for single-user local use
+- No remote sync or cloud storage
+- SQLite is not designed for concurrent multi-user access
+- PDF import works best with cheat-sheet PDFs using the `Name ♂/♀ Location` format; complex layouts may need manual correction after import
 
-## Impacchettare in .exe (Windows)
+---
 
-Installa PyInstaller:
+## Packaging as a standalone .exe (Windows)
 
 ```bash
 pip install pyinstaller
-```
 
-Genera l'eseguibile:
-
-```bash
 pyinstaller --onefile --windowed \
   --add-data "app;app" \
   --add-data ".streamlit;.streamlit" \
-  --add-data "data;data" \
   --name "EthoDogCatalog" \
   main.py
 ```
 
-L'eseguibile verrà creato in `dist/EthoDogCatalog.exe`.
-
-> **Nota:** Streamlit richiede che i suoi file statici siano inclusi. Potrebbe essere necessario aggiungere `--add-data` per la cartella Streamlit. Consulta la documentazione di PyInstaller per casi complessi.
-
-Per packaging avanzato, considera `--collect-all streamlit`.
-
-## Architettura
-
-```
-UI (Streamlit)
-    ↓ chiama
-Services (DogService, PhotoService, ExportService)
-    ↓ chiama
-Repositories (DogRepository, PhotoRepository)
-    ↓ legge/scrive
-SQLite (data/catalog.db)
-
-Services → Utils (ImageUtils, BackupUtils, CsvUtils)
-Services → PDF (PdfGenerator)
-```
-
-Ogni livello dipende solo da quello sotto. La UI non accede mai direttamente al DB.
-
-## Limiti del MVP
-
-- Nessuna autenticazione (uso locale monoUtente)
-- Nessun sync remoto / cloud
-- Import da vecchi PDF non supportato (usa import CSV)
-- Nessun riconoscimento automatico del cane dalla foto
-- Un solo utente alla volta (SQLite non è progettato per accessi concorrenti)
-
-## Fase 2 (future)
-
-- Deploy su VPS/server (Flask/FastAPI + PostgreSQL)
-- Multiutenza con autenticazione
-- Sync foto su S3 o storage remoto
-- Import OCR da PDF
-- Notifiche automatiche per cani con foto vecchie
+The executable will be created at `dist/EthoDogCatalog.exe`.
