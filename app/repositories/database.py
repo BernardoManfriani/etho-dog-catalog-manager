@@ -26,7 +26,11 @@ class Database:
                     status TEXT DEFAULT 'active',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    manual_order INTEGER
+                    manual_order INTEGER,
+                    tag_number INTEGER,
+                    color TEXT DEFAULT '',
+                    year TEXT DEFAULT '',
+                    dead BOOLEAN DEFAULT 0
                 );
 
                 CREATE TABLE IF NOT EXISTS dog_photos (
@@ -44,3 +48,23 @@ class Database:
                 CREATE INDEX IF NOT EXISTS idx_dog_photos_dog_id ON dog_photos(dog_id);
                 CREATE INDEX IF NOT EXISTS idx_dog_photos_primary ON dog_photos(dog_id, is_primary);
             """)
+        # Migra DB esistenti che non hanno ancora le nuove colonne
+        self._migrate_columns()
+
+    def _migrate_columns(self) -> None:
+        """Aggiunge le colonne mancanti ai DB esistenti (idempotente)."""
+        new_cols = [
+            ("tag_number", "INTEGER"),
+            ("color", "TEXT DEFAULT ''"),
+            ("year", "TEXT DEFAULT ''"),
+            ("dead", "BOOLEAN DEFAULT 0"),
+        ]
+        conn = self.get_connection()
+        try:
+            existing = {row[1] for row in conn.execute("PRAGMA table_info(dogs)")}
+            for col_name, col_def in new_cols:
+                if col_name not in existing:
+                    conn.execute(f"ALTER TABLE dogs ADD COLUMN {col_name} {col_def}")
+            conn.commit()
+        finally:
+            conn.close()

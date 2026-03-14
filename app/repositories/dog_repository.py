@@ -28,7 +28,7 @@ class DogRepository:
         location: Optional[str] = None,
         needs_photo_update: Optional[bool] = None,
         status: str = "active",
-        order_by: str = "name",  # 'name', 'created_at', 'updated_at', 'manual_order'
+        order_by: str = "name",
     ) -> list[Dog]:
         clauses = ["status = ?"]
         params: list = [status]
@@ -63,12 +63,17 @@ class DogRepository:
         with self.db.get_connection() as conn:
             cursor = conn.execute(
                 """INSERT INTO dogs (name, sex, location, notes, needs_photo_update,
-                   status, created_at, updated_at, manual_order)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   status, created_at, updated_at, manual_order,
+                   tag_number, color, year, dead)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 [
                     dog.name, dog.sex, dog.location, dog.notes,
                     1 if dog.needs_photo_update else 0,
                     dog.status, now, now, dog.manual_order,
+                    dog.tag_number,
+                    dog.color or "",
+                    dog.year or "",
+                    1 if dog.dead else 0,
                 ],
             )
             dog.id = cursor.lastrowid
@@ -81,12 +86,18 @@ class DogRepository:
         with self.db.get_connection() as conn:
             conn.execute(
                 """UPDATE dogs SET name=?, sex=?, location=?, notes=?,
-                   needs_photo_update=?, status=?, updated_at=?, manual_order=?
+                   needs_photo_update=?, status=?, updated_at=?, manual_order=?,
+                   tag_number=?, color=?, year=?, dead=?
                    WHERE id=?""",
                 [
                     dog.name, dog.sex, dog.location, dog.notes,
                     1 if dog.needs_photo_update else 0,
-                    dog.status, now, dog.manual_order, dog.id,
+                    dog.status, now, dog.manual_order,
+                    dog.tag_number,
+                    dog.color or "",
+                    dog.year or "",
+                    1 if dog.dead else 0,
+                    dog.id,
                 ],
             )
             dog.updated_at = datetime.fromisoformat(now)
@@ -107,6 +118,10 @@ class DogRepository:
                 "UPDATE dogs SET status='active', updated_at=? WHERE id=?",
                 [now, dog_id],
             )
+
+    def delete(self, dog_id: int) -> None:
+        with self.db.get_connection() as conn:
+            conn.execute("DELETE FROM dogs WHERE id=?", [dog_id])
 
     def get_stats(self) -> dict:
         with self.db.get_connection() as conn:
@@ -161,12 +176,15 @@ class DogRepository:
         def _parse_dt(val):
             if val is None:
                 return None
-            if isinstance(val, datetime):
-                return val
             try:
                 return datetime.fromisoformat(str(val))
             except ValueError:
                 return None
+
+        keys = row.keys()
+
+        def _get(key, default=None):
+            return row[key] if key in keys else default
 
         return Dog(
             id=row["id"],
@@ -179,4 +197,8 @@ class DogRepository:
             created_at=_parse_dt(row["created_at"]),
             updated_at=_parse_dt(row["updated_at"]),
             manual_order=row["manual_order"],
+            tag_number=_get("tag_number"),
+            color=_get("color") or None,
+            year=_get("year") or None,
+            dead=bool(_get("dead", 0)),
         )
